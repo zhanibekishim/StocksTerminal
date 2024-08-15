@@ -8,7 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,11 +24,11 @@ private const val MIN_VISIBLE_BARS_COUNT = 20
 @Composable
 fun Terminal(bars: List<BarDto>) {
     var visibleBarsCount by remember {
-        mutableStateOf(100)
+        mutableIntStateOf(100)
     }
 
     var terminalWidth by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(0f)
     }
 
     val barWidth by remember {
@@ -37,7 +38,7 @@ fun Terminal(bars: List<BarDto>) {
     }
 
     var scrolledBy by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(0f)
     }
 
     val visibleBars by remember {
