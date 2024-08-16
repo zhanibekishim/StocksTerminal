@@ -1,4 +1,4 @@
-package com.example.terminal.presentation
+package com.example.terminal.presentation.sample
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
