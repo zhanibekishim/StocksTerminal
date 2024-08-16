@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -67,6 +68,7 @@ fun Terminal(bars: List<BarDto>) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .padding(bottom = 32.dp, top = 32.dp)
             .transformable(transformableState)
     ) {
         terminalWidth = size.width
