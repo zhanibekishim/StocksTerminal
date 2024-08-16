@@ -1,5 +1,3 @@
-package com.example.terminal.presentation
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.TransformableState
@@ -18,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import com.example.terminal.data.model.BarDto
+import com.example.terminal.presentation.rememberTerminalState
 
 import kotlin.math.roundToInt
 
