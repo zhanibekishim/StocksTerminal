@@ -16,6 +16,8 @@ class MainViewModel: ViewModel() {
     private val _state = MutableStateFlow<TerminalScreenState>(TerminalScreenState.Initial)
     val state = _state.asStateFlow()
 
+    private var lastState:TerminalScreenState = TerminalScreenState.Initial
+
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.d("TerminalViewModel", "Exception caught: $throwable")
     }
@@ -24,10 +26,12 @@ class MainViewModel: ViewModel() {
         loadBarList()
     }
 
-    private fun loadBarList() {
+   fun loadBarList(timeFrame: TimeFrame = TimeFrame.MIN_5) {
+        lastState = _state.value
+        _state.value = TerminalScreenState.Loading
         viewModelScope.launch(exceptionHandler) {
-            val barList = apiService.loadBars().barList
-            _state.value = TerminalScreenState.Content(barList = barList)
+            val barList = apiService.loadBars(timeFrame.value).barList
+            _state.value = TerminalScreenState.Content(barList = barList, timeFrame = timeFrame)
         }
     }
 }
