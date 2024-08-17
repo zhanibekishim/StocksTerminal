@@ -35,6 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terminal.R
+import com.example.terminal.data.model.BarDto
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private const val MIN_VISIBLE_BARS_COUNT = 20
@@ -55,7 +59,8 @@ fun Terminal(
                 terminalState = terminalState,
                 onTerminalStateChanged = {
                     terminalState.value = it
-                }
+                },
+                timeFrame = currentState.timeFrame
             )
 
             currentState.barList.firstOrNull()?.let {
@@ -124,7 +129,8 @@ private fun TimeFrames(
 private fun Chart(
     modifier: Modifier = Modifier,
     terminalState: State<TerminalState>,
-    onTerminalStateChanged: (TerminalState) -> Unit
+    onTerminalStateChanged: (TerminalState) -> Unit,
+    timeFrame: TimeFrame
 ) {
     val currentState = terminalState.value
     val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
@@ -142,7 +148,7 @@ private fun Chart(
             )
         )
     }
-
+    val textMeasurer = rememberTextMeasurer()
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -168,6 +174,13 @@ private fun Chart(
         translate(left = currentState.scrolledBy) {
             currentState.barList.forEachIndexed { index, bar ->
                 val offsetX = size.width - index * currentState.barWidth
+                drawTimeDelimiter(
+                    bar,
+                    currentState.barList.getOrNull(index + 1),
+                    timeFrame,
+                    offsetX,
+                    textMeasurer
+                )
                 drawLine(
                     color = Color.White,
                     start = Offset(offsetX, size.height - ((bar.low - min) * pxPerPoint)),
@@ -185,6 +198,68 @@ private fun Chart(
     }
 }
 
+private fun DrawScope.drawTimeDelimiter(
+    bar: BarDto,
+    nextBar: BarDto?,
+    timeFrame: TimeFrame,
+    offsetX: Float,
+    textMeasurer: TextMeasurer
+) {
+    val calendar = bar.calendar
+
+    val minutes = calendar.get(Calendar.MINUTE)
+    val hours = calendar.get(Calendar.HOUR_OF_DAY)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    val shouldDrawDelimiter = when (timeFrame) {
+        TimeFrame.MIN_5 -> {
+            minutes == 0
+        }
+
+        TimeFrame.MIN_15 -> {
+            minutes == 0 && hours % 2 == 0
+        }
+
+        TimeFrame.MIN_30, TimeFrame.HOUR_1 -> {
+            val nextBarDay = nextBar?.calendar?.get(Calendar.DAY_OF_MONTH)
+            day != nextBarDay
+        }
+    }
+    if (!shouldDrawDelimiter) return
+
+    drawLine(
+        color = Color.White.copy(alpha = 0.5f),
+        start = Offset(offsetX, 0f),
+        end = Offset(offsetX, size.height),
+        strokeWidth = 1f,
+        pathEffect = PathEffect.dashPathEffect(
+            intervals = floatArrayOf(4.dp.toPx(), 4.dp.toPx())
+        )
+    )
+
+    val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
+    val nameOfMonth = dateFormat.format(calendar.time)
+    val text = when (timeFrame) {
+        TimeFrame.MIN_5, TimeFrame.MIN_15 -> {
+            String.format("%02d:00", hours)
+        }
+
+        TimeFrame.MIN_30, TimeFrame.HOUR_1 -> {
+            String.format("%s %s", day, nameOfMonth)
+        }
+    }
+    val textLayoutResult = textMeasurer.measure(
+        text = text,
+        style = TextStyle(
+            color = Color.White,
+            fontSize = 12.sp
+        )
+    )
+    drawText(
+        textLayoutResult = textLayoutResult,
+        topLeft = Offset(offsetX - textLayoutResult.size.width / 2, size.height)
+    )
+}
 
 @Composable
 private fun Prices(
